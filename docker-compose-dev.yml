@@ -1,0 +1,29 @@
+services:
+  db:
+    container_name: wwpc-db
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:    
+    - ./tmp/db:/var/lib/postgresql/data 
+    ports:
+      - '5432:5432'
+
+  api:
+    container_name: wwpc    
+    build: 
+      context: .
+      dockerfile: Dockerfile-dev
+    command: /bin/bash -c "rm -f /tmp/server.pid && bundle exec rails server -b 0.0.0.0 -P /tmp/server.pid"        
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/rails
+    depends_on:
+      - db
+      - redis      
+
+  redis:
+    container_name: wwpc-redis
+    image: redis:7.4

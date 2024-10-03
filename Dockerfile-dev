@@ -1,0 +1,9 @@
+FROM ruby:3.3.3
+
+WORKDIR /rails
+
+COPY . .
+RUN bundle install
+
+EXPOSE 3000
+CMD ["./bin/rails", "server"]
