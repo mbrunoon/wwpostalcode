@@ -15,10 +15,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_04_061811) do
   enable_extension "plpgsql"
 
   create_table "postal_codes", force: :cascade do |t|
+    t.string "language"
+    t.string "postal_code"
+    t.string "country_code"
     t.jsonb "metadata"
     t.json "address"
     t.json "geodata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["country_code"], name: "index_postal_codes_on_country_code"
+    t.index ["language"], name: "index_postal_codes_on_language"
+    t.index ["postal_code"], name: "index_postal_codes_on_postal_code"
   end
 end
