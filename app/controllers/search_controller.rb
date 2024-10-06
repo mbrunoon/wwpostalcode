@@ -2,6 +2,7 @@ class SearchController < ApplicationController
 
   def create
     postal_codes = PostalCode.search(search_params)
+    
     render json: postal_codes
   end
 
