@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "pages#index"
 
-  post "/search", to: "search#create"
+  post "/search", to: "search#create", as: :json
+
+  if Rails.env != "production" 
+    mount RailsPerformance::Engine, at: 'rails/performance'
+  end
 
 end

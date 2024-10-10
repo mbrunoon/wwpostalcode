@@ -2,7 +2,7 @@ class CreatePostalCodes < ActiveRecord::Migration[7.2]
   def change
     create_table :postal_codes do |t|
       
-      t.string :language
+      t.string :language_code
       t.string :postal_code
       t.string :country_code
       
@@ -11,10 +11,9 @@ class CreatePostalCodes < ActiveRecord::Migration[7.2]
       t.json :geodata
 
       t.timestamps
-      
-      t.index :language
-      t.index :postal_code
-      t.index :country_code
+            
+      t.index [:language_code, :postal_code, :country_code], unique: true
+      t.index [:language_code, :postal_code]
     end
   end
 end
