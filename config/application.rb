@@ -28,5 +28,12 @@ module Wwpostalcode
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # config.active_record.cache_versioning = false    
+    config.cache_store = :redis_cache_store, { 
+      url: ENV.fetch("REDIS_URL") { "redis://localhost:6379/0" },
+      expire_after: 30.days
+    }
+
   end
 end

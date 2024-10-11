@@ -9,7 +9,9 @@ gem "puma", ">= 5.0"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem "jbuilder"
 # Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+gem "hiredis"
+gem 'redis-store'
+gem "redis"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -38,6 +40,15 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem 'faker', '~> 3.4', '>= 3.4.2'
+  gem 'factory_bot', '~> 6.5'
+
+  gem 'byebug', '~> 11.1', '>= 11.1.3'
+
+  gem 'rspec-rails', '~> 7.0', '>= 7.0.1'
+
+  gem 'rails_performance'
 end
 
 
