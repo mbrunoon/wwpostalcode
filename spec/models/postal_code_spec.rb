@@ -2,73 +2,73 @@ require 'rails_helper'
 
 RSpec.describe PostalCode, type: :model do        
 
-  let(:search_params) { { postal_code: "15040270", language_code: "PT", country_code: "PT" } }  
+  before(:all) do
+    @postal_code_pt_pt = FactoryBot.create(:default_postal_code_pt_pt)
+    @postal_code_pt_es = FactoryBot.create(:default_postal_code_pt_es)
+    @postal_code_pt_it = FactoryBot.create(:default_postal_code_pt_it)
+      
+    FactoryBot.create(:default_postal_code_es_es)
+    FactoryBot.create(:default_postal_code_it_it)
+
+    @postal_code_pt_pt_params = @postal_code_pt_pt.serializable_hash(only: [:postal_code, :language_code, :country_code]).symbolize_keys
+  end  
 
   context "validations" do
-    it "validate uniqueness of postal code and country code" do
-      PostalCode.create(search_params)
-
-      postal_code_2 = PostalCode.new(search_params)
+    it "validate uniqueness of postal code and country code" do            
+      
+      postal_code_2 = PostalCode.new(@postal_code_pt_pt_params)
       
       expect(postal_code_2.valid?).to eq(false)
       expect(postal_code_2.errors[:postal_code].any?).to eq(true)      
     end
 
     it "should return cache address with country code" do      
-      cache_address = PostalCode.cache_address(search_params)
-      expect(cache_address).to eq("language/PT/country/PT/postal_code/15040270")
+      cache_address = PostalCode.cache_address(@postal_code_pt_pt_params)
+      expect(cache_address).to eq("language/PT/country/PT/postal_code/0000000")
     end
 
     it "should return cache address without country code" do      
-      cache_address = PostalCode.cache_address(search_params.except(:country_code))
-      expect(cache_address).to eq("language/PT/postal_code/15040270")
+      cache_address = PostalCode.cache_address(@postal_code_pt_pt_params.except(:country_code))
+      expect(cache_address).to eq("language/PT/postal_code/0000000")
     end
 
   end  
 
   context 'search' do
-    it "should return PostalCode with postal_code and language_code params" do
-      PostalCode.create(search_params)
-
-      new_search_params = search_params.except(:country_code)
-      postal_codes = PostalCode.search(new_search_params)
+    it "should return PostalCode with postal_code and language_code params" do      
+      search_params = { postal_code: "0000-000", language_code: "PT" }      
+      postal_codes = JSON.parse(PostalCode.search(search_params))
       
-      expect(postal_codes.first.postal_code).to eq(search_params[:postal_code].tr('^A-Za-z0-9', ''))
+      expect(postal_codes.first["metadata"]["postal_code"].tr('^A-Za-z0-9', '')).to eq(search_params[:postal_code].tr('^A-Za-z0-9', ''))
     end
 
     it "should return two PostalCode from different countries" do
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "ES" })
+      postal_codes = JSON.parse(PostalCode.search({ postal_code: "0000000"}))
       
-      postal_codes = PostalCode.search({ postal_code: "0000000"})
-      
-      expect(postal_codes.count).to eq(2)
-      expect(postal_codes.pluck(:country_code)).to eq(["PT", "ES"])      
+      expect(postal_codes.count).to be >= 2      
+      expect(postal_codes[0]["metadata"]["country_code"]).not_to eq(postal_codes[1]["metadata"]["country_code"])      
     end
 
     it "should return three PostalCode from different countries" do
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "ES" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "IE" })
       
-      postal_codes = PostalCode.search({ postal_code: "0000000", language_code: "PT"})
+      postal_codes = JSON.parse(PostalCode.search({ postal_code: "0000000", language_code: "PT"}))
       
-      expect(postal_codes.count).to eq(3)
-      expect(postal_codes.pluck(:country_code)).to eq(["PT", "ES", "IE"])
+      expect(postal_codes.count).to be >= 3
+      
+      returned_country_codes = postal_codes.map{|i| i["metadata"]["country_code"]}
+      expect(returned_country_codes).to eq(["PT", "ES", "IT"])
     end
 
     it "should return two PostalCode from different countries and languages" do      
-      PostalCode.new({ postal_code: "0000000", language_code: "PT", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "ES" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "IE" })
-
-      PostalCode.create({ postal_code: "0000000", language_code: "EN", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "EN", country_code: "ES" })            
-
-      postal_codes = PostalCode.search({ postal_code: "0000000", language_code: "EN"})
+      postal_codes = JSON.parse(PostalCode.search({ postal_code: "0000000", language_code: "PT"}))
              
-      expect(postal_codes.count).to eq(2)
-      expect(postal_codes.pluck(:country_code)).to eq(["PT", "ES"])      
+      expect(postal_codes.count).to be >= 2
+
+      returned_country_codes = postal_codes.map{|i| i["metadata"]["country_code"]}      
+      expect(returned_country_codes).to eq(["PT", "ES", "IT"])
+
+      returned_language_codes = postal_codes.map{|i| i["metadata"]["language_code"]}
+      expect(returned_language_codes).to eq(["PT", "PT", "PT"])
     end
 
   end

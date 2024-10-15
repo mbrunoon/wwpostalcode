@@ -42,13 +42,18 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem 'faker', '~> 3.4', '>= 3.4.2'
-  gem 'factory_bot', '~> 6.5'
+  gem 'factory_bot_rails'
 
   gem 'byebug', '~> 11.1', '>= 11.1.3'
 
   gem 'rspec-rails', '~> 7.0', '>= 7.0.1'
 
   gem 'rails_performance'
+end
+
+group :test do
+  gem 'database_cleaner-active_record'
+  gem 'database_cleaner-redis'
 end
 
 
