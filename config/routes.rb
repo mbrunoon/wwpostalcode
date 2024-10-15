@@ -10,8 +10,7 @@ Rails.application.routes.draw do
 
   post "/search", to: "search#create", as: :json
 
-  if Rails.env != "production" 
-    mount RailsPerformance::Engine, at: 'rails/performance'
+  if Rails.env != "production"
+    mount RailsPerformance::Engine, at: "rails/performance"
   end
-
 end

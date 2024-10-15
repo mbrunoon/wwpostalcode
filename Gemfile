@@ -10,7 +10,7 @@ gem "puma", ">= 5.0"
 # gem "jbuilder"
 # Use Redis adapter to run Action Cable in production
 gem "hiredis"
-gem 'redis-store'
+gem "redis-store"
 gem "redis"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
@@ -41,19 +41,17 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 
-  gem 'faker', '~> 3.4', '>= 3.4.2'
-  gem 'factory_bot_rails'
+  gem "faker", "~> 3.4", ">= 3.4.2"
+  gem "factory_bot_rails"
 
-  gem 'byebug', '~> 11.1', '>= 11.1.3'
+  gem "byebug", "~> 11.1", ">= 11.1.3"
 
-  gem 'rspec-rails', '~> 7.0', '>= 7.0.1'
+  gem "rspec-rails", "~> 7.0", ">= 7.0.1"
 
-  gem 'rails_performance'
+  gem "rails_performance"
 end
 
 group :test do
-  gem 'database_cleaner-active_record'
-  gem 'database_cleaner-redis'
+  gem "database_cleaner-active_record"
+  gem "database_cleaner-redis"
 end
-
-
