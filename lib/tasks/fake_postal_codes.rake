@@ -1,5 +1,6 @@
 namespace :postal_code do
   desc "Generating fake postal codes"
+  # rake postal_code:create_fake
 
   task create_fake: :environment do |task, args|
     countries = [
@@ -11,10 +12,13 @@ namespace :postal_code do
       { country_code: "AL", country_name: "Alemanha" }
     ]
 
-    100.times do
+    10.times do
+      # Generating PostalCode baths to mass registration
+
       postal_codes = Array.new
 
-      1_000.times do
+      10.times do
+        # generating fake PostalCode
         postal_code = Faker::Address.full_address_as_hash(
           :street_name,
           :building_number,
@@ -27,6 +31,7 @@ namespace :postal_code do
           :longitude
         )
 
+        # Randomizing postal_code
         postal_codes_options = [
           "#{rand(1000..9999)}-#{rand(100..999)}",
           postal_code[:mail_box]
@@ -34,6 +39,7 @@ namespace :postal_code do
 
         postal_code[:postcode] = postal_codes_options[rand(0..1)]
 
+        # creatring a similar postal_code to each country
         countries.each do |country|
           country_code = country[:country_code]
           country_name = country[:country_name]
@@ -41,11 +47,9 @@ namespace :postal_code do
           postal_codes << {
             country_code: country_code,
             postal_code: postal_code[:postcode].tr("^A-Za-z0-9", ""),
-            language_code: lang,
             metadata: {
               country_code: country_code,
               postal_code: postal_code[:postcode],
-              language_code: lang
             },
             address: {
               label: "%{street_name}, %{building_number}, %{secondary_address}, %{city}, %{community}, %{state}, Portugal, %{postcode}" % postal_code,
