@@ -1,76 +1,57 @@
 require 'rails_helper'
 
-RSpec.describe PostalCode, type: :model do        
-
-  let(:search_params) { { postal_code: "15040270", language_code: "PT", country_code: "PT" } }  
-
-  context "validations" do
-    it "validate uniqueness of postal code and country code" do
-      PostalCode.create(search_params)
-
-      postal_code_2 = PostalCode.new(search_params)
-      
-      expect(postal_code_2.valid?).to eq(false)
-      expect(postal_code_2.errors[:postal_code].any?).to eq(true)      
-    end
-
-    it "should return cache address with country code" do      
-      cache_address = PostalCode.cache_address(search_params)
-      expect(cache_address).to eq("language/PT/country/PT/postal_code/15040270")
-    end
-
-    it "should return cache address without country code" do      
-      cache_address = PostalCode.cache_address(search_params.except(:country_code))
-      expect(cache_address).to eq("language/PT/postal_code/15040270")
-    end
-
-  end  
-
-  context 'search' do
-    it "should return PostalCode with postal_code and language_code params" do
-      PostalCode.create(search_params)
-
-      new_search_params = search_params.except(:country_code)
-      postal_codes = PostalCode.search(new_search_params)
-      
-      expect(postal_codes.first.postal_code).to eq(search_params[:postal_code].tr('^A-Za-z0-9', ''))
-    end
-
-    it "should return two PostalCode from different countries" do
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "ES" })
-      
-      postal_codes = PostalCode.search({ postal_code: "0000000"})
-      
-      expect(postal_codes.count).to eq(2)
-      expect(postal_codes.pluck(:country_code)).to eq(["PT", "ES"])      
-    end
-
-    it "should return three PostalCode from different countries" do
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "ES" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "IE" })
-      
-      postal_codes = PostalCode.search({ postal_code: "0000000", language_code: "PT"})
-      
-      expect(postal_codes.count).to eq(3)
-      expect(postal_codes.pluck(:country_code)).to eq(["PT", "ES", "IE"])
-    end
-
-    it "should return two PostalCode from different countries and languages" do      
-      PostalCode.new({ postal_code: "0000000", language_code: "PT", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "ES" })
-      PostalCode.create({ postal_code: "0000000", language_code: "PT", country_code: "IE" })
-
-      PostalCode.create({ postal_code: "0000000", language_code: "EN", country_code: "PT" })
-      PostalCode.create({ postal_code: "0000000", language_code: "EN", country_code: "ES" })            
-
-      postal_codes = PostalCode.search({ postal_code: "0000000", language_code: "EN"})
-             
-      expect(postal_codes.count).to eq(2)
-      expect(postal_codes.pluck(:country_code)).to eq(["PT", "ES"])      
-    end
-
+RSpec.describe PostalCode, type: :model do
+  before(:all) do
+    FactoryBot.create(:default_postal_code_pt)
+    FactoryBot.create(:default_postal_code_es)
+    FactoryBot.create(:default_postal_code_it)
   end
 
+  context "validations" do
+    it "validate presence postal_code" do
+      postal_code = PostalCode.new({ postal_code: nil, country_code: "PT" })
+
+      expect(postal_code.valid?).to eq(false)
+      expect(postal_code.errors[:postal_code].any?).to eq(true)
+    end
+
+    it "validate presence country_code" do
+      postal_code = PostalCode.new({ postal_code: "0000-000", country_code: nil })
+
+      expect(postal_code.valid?).to eq(false)
+      expect(postal_code.errors[:country_code].any?).to eq(true)
+    end
+
+    it "validate presence country_code" do
+      postal_code = PostalCode.new({ postal_code: nil, country_code: nil })
+
+      expect(postal_code.valid?).to eq(false)
+      expect(postal_code.errors[:postal_code].any?).to eq(true)
+      expect(postal_code.errors[:country_code].any?).to eq(true)
+    end
+  end
+
+  context "search" do
+    it "should return world wide postal codes" do
+      postal_codes = JSON.parse(PostalCode.search({ postal_code: "0000-000" }))
+      countries = postal_codes.map { |i| i["metadata"]["country_code"] }.uniq
+
+      expect(countries.length).to be >= 2
+    end
+
+    it "should return world wide postal codes" do
+      postal_codes = JSON.parse(PostalCode.search({ postal_code: "0000-000", country_code: "PT" }))
+      countries = postal_codes.map { |i| i["metadata"]["country_code"] }.uniq
+      expect(countries.length).to eq(1)
+    end
+
+    it "should return Portugal postal codes" do
+      postal_codes = PostalCode.search({ postal_code: "0000-000", country_code: "PT" })
+      postal_codes = JSON.parse(postal_codes)
+      expect(postal_codes.length).to be >= 1
+
+      country = postal_codes.map { |i| i["metadata"]["country_code"] }.uniq
+      expect(country[0]).to eq("PT")
+    end
+  end
 end
